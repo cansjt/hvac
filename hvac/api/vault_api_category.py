@@ -36,15 +36,19 @@ class VaultApiCategory(VaultApiBase):
         :return: The requested class instance where available.
         :rtype: hvac.api.VaultApiBase
         """
-        private_attr_name = self.get_private_attr_name(item)
-        logger.info('NCA: self="%s" type="%s" item="%s" privateitem="%s" privateitemexists="%s"',
-                    str(self),
+        logger.info('NCA: self="%s" type="%s" item="%s"',
                     type(self),
                     item,
-                    private_attr_name,
-                    hasattr(self, private_attr_name),
                     )
-        if item in self.implemented_class_names and hasattr(self, private_attr_name):
+        if item.startswith('__'):
+            raise AttributeError
+        private_attr_name = VaultApiCategory.get_private_attr_name(item)
+        logger.info('NCA: item="%s" privateitem="%s" privateitemexists="%s"',
+                    item,
+                    private_attr_name,
+                    private_attr_name in self.__dict__,
+                    )
+        if item in self.implemented_class_names and private_attr_name in self.__dict__:
             return getattr(self, private_attr_name)
         if item in [u.lower() for u in self.unimplemented_classes]:
             raise NotImplementedError(
